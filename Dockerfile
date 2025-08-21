@@ -16,23 +16,44 @@ RUN mkdir -p /usr/lib/docker/cli-plugins \
  -o /usr/lib/docker/cli-plugins/docker-compose \
  && chmod +x /usr/lib/docker/cli-plugins/docker-compose
 
-# --- kubectl + helm + kustomize + yq ---
-RUN curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl -o /usr/local/bin/kubectl \
- && chmod +x /usr/local/bin/kubectl
-RUN curl -L https://get.helm.sh/helm-$(curl -s https://api.github.com/repos/helm/helm/releases/latest | jq -r .tag_name)-linux-amd64.tar.gz \
- | tar xz && mv linux-amd64/helm /usr/local/bin/helm && rm -rf linux-amd64
-# --- kustomize (versione pinnata, niente API GitHub) ---
+# --- kubectl + helm + kustomize + yq (versioni pinnate, no API) ---
+ARG KUBECTL_VERSION=v1.30.3
+ARG HELM_VERSION=3.15.2
 ARG KUSTOMIZE_VERSION=5.4.2
+ARG YQ_VERSION=4.44.3
+
+# kubectl
+RUN set -euo pipefail; \
+  curl -fL --retry 5 --retry-delay 2 \
+    -o /usr/local/bin/kubectl \
+    "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
+  chmod +x /usr/local/bin/kubectl && kubectl version --client
+
+# helm
+RUN set -euo pipefail; \
+  curl -fL --retry 5 --retry-delay 2 \
+    -o /tmp/helm.tgz \
+    "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" && \
+  tar -xzf /tmp/helm.tgz -C /tmp && \
+  mv /tmp/linux-amd64/helm /usr/local/bin/helm && \
+  rm -rf /tmp/helm.tgz /tmp/linux-amd64 && \
+  helm version
+
+# kustomize
 RUN set -euo pipefail; \
   curl -fL --retry 5 --retry-delay 2 \
     -o /tmp/kustomize.tgz \
-    "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz"; \
-  tar -C /usr/local/bin -xzf /tmp/kustomize.tgz kustomize; \
-  rm -f /tmp/kustomize.tgz; \
-  /usr/local/bin/kustomize version
+    "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" && \
+  tar -C /usr/local/bin -xzf /tmp/kustomize.tgz kustomize && \
+  rm -f /tmp/kustomize.tgz && \
+  kustomize version
 
-RUN curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq \
- && chmod +x /usr/local/bin/yq
+# yq
+RUN set -euo pipefail; \
+  curl -fL --retry 5 --retry-delay 2 \
+    -o /usr/local/bin/yq \
+    "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" && \
+  chmod +x /usr/local/bin/yq && yq --version
 
 # --- Terraform + Packer ---
 RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp.gpg \
