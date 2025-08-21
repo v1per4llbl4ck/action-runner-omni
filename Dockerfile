@@ -65,8 +65,10 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
  && apt-get install -y nodejs && npm i -g pnpm@latest
 RUN apt-get update && apt-get install -y python3 python3-pip python3-venv pipx && rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y openjdk-17-jdk maven gradle && rm -rf /var/lib/apt/lists/*
-RUN curl -L https://go.dev/dl/$(curl -s https://go.dev/VERSION?m=text).linux-amd64.tar.gz \
- | tar -C /usr/local -xz && echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
+# Install latest Go release
+RUN GOVERSION=$(curl -fsSL https://go.dev/VERSION?m=text | head -n 1 | tr -d '\n') && \
+  curl -fsSL "https://go.dev/dl/${GOVERSION}.linux-amd64.tar.gz" | tar -C /usr/local -xz && \
+  echo 'export PATH=$PATH:/usr/local/go/bin' >> /etc/profile
 RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O /tmp/msprod.deb \
  && dpkg -i /tmp/msprod.deb && rm /tmp/msprod.deb \
  && apt-get update && apt-get install -y dotnet-sdk-8.0 && rm -rf /var/lib/apt/lists/*
