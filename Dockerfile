@@ -2,6 +2,8 @@ FROM ghcr.io/actions/actions-runner:latest
 
 # --- base utils ---
 USER root
+# Use Bash with strict options for reliable builds
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     ca-certificates curl git jq zip unzip xz-utils sudo gnupg lsb-release apt-transport-https \
     software-properties-common build-essential pkg-config libssl-dev libffi-dev \
@@ -23,16 +25,14 @@ ARG KUSTOMIZE_VERSION=5.4.2
 ARG YQ_VERSION=4.44.3
 
 # kubectl
-RUN set -euo pipefail; \
-  curl -fL --retry 5 --retry-delay 2 \
+RUN curl -fL --retry 5 --retry-delay 2 \
     -o /usr/local/bin/kubectl \
     "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
   chmod +x /usr/local/bin/kubectl && \
   kubectl version --client
 
 # helm
-RUN set -euo pipefail; \
-  curl -fL --retry 5 --retry-delay 2 \
+RUN curl -fL --retry 5 --retry-delay 2 \
     -o /tmp/helm.tgz \
     "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" && \
   tar -xzf /tmp/helm.tgz -C /tmp && \
@@ -41,8 +41,7 @@ RUN set -euo pipefail; \
   helm version
 
 # kustomize
-RUN set -euo pipefail; \
-  curl -fL --retry 5 --retry-delay 2 \
+RUN curl -fL --retry 5 --retry-delay 2 \
     -o /tmp/kustomize.tgz \
     "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz" && \
   tar -C /usr/local/bin -xzf /tmp/kustomize.tgz kustomize && \
@@ -50,8 +49,7 @@ RUN set -euo pipefail; \
   kustomize version
 
 # yq
-RUN set -euo pipefail; \
-  curl -fL --retry 5 --retry-delay 2 \
+RUN curl -fL --retry 5 --retry-delay 2 \
     -o /usr/local/bin/yq \
     "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" && \
   chmod +x /usr/local/bin/yq && yq --version
