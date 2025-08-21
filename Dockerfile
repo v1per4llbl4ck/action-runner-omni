@@ -26,8 +26,9 @@ ARG YQ_VERSION=4.44.3
 RUN set -euo pipefail; \
   curl -fL --retry 5 --retry-delay 2 \
     -o /usr/local/bin/kubectl \
-    "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && 
-  chmod +x /usr/local/bin/kubectl && kubectl version --client
+    "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
+  chmod +x /usr/local/bin/kubectl && \
+  kubectl version --client
 
 # helm
 RUN set -euo pipefail; \
