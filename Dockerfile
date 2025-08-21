@@ -21,14 +21,16 @@ RUN curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s 
  && chmod +x /usr/local/bin/kubectl
 RUN curl -L https://get.helm.sh/helm-$(curl -s https://api.github.com/repos/helm/helm/releases/latest | jq -r .tag_name)-linux-amd64.tar.gz \
  | tar xz && mv linux-amd64/helm /usr/local/bin/helm && rm -rf linux-amd64
-# FIX kustomize
-RUN set -eux; \
-  ver="$(curl -s -H 'Accept: application/vnd.github+json' https://api.github.com/repos/kubernetes-sigs/kustomize/releases/latest \
-    | jq -r '.tag_name' | sed 's#^kustomize/##')"; \
-  curl -L "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${ver}/kustomize_v${ver}_linux_amd64.tar.gz" \
-  -o /tmp/kustomize.tgz; \
+# --- kustomize (versione pinnata, niente API GitHub) ---
+ARG KUSTOMIZE_VERSION=5.4.2
+RUN set -euo pipefail; \
+  curl -fL --retry 5 --retry-delay 2 \
+    -o /tmp/kustomize.tgz \
+    "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/v${KUSTOMIZE_VERSION}/kustomize_v${KUSTOMIZE_VERSION}_linux_amd64.tar.gz"; \
   tar -C /usr/local/bin -xzf /tmp/kustomize.tgz kustomize; \
-  rm -f /tmp/kustomize.tgz
+  rm -f /tmp/kustomize.tgz; \
+  /usr/local/bin/kustomize version
+
 RUN curl -L https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -o /usr/local/bin/yq \
  && chmod +x /usr/local/bin/yq
 
