@@ -1,18 +1,17 @@
 name: Build and Push Runner Omni
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
+    tags:
+      - "v*.*.*"
     paths:
-      - Dockerfile
-      - .github/workflows/build-runner-omni.yml
-  tags:
-    - 'v*.*.*'
+      - "Dockerfile"
+      - ".github/workflows/build-runner-omni.yml"
 
 env:
   REGISTRY: ghcr.io
-  # usa owner/repo automaticamente
   IMAGE_NAME: ${{ github.repository }}-runner-omni
 
 jobs:
