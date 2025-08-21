@@ -75,24 +75,6 @@ RUN wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
-# --- Cloud CLIs ---
-RUN curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip \
- && unzip /tmp/awscliv2.zip -d /tmp && /tmp/aws/install && rm -rf /tmp/aws /tmp/awscliv2.zip
-RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" \
-   > /etc/apt/sources.list.d/google-cloud-sdk.list \
- && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg \
- && apt-get update && apt-get install -y google-cloud-cli && rm -rf /var/lib/apt/lists/*
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
-
-# --- SecDevOps utils ---
-RUN curl -L https://github.com/aquasecurity/trivy/releases/latest/download/trivy_$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | jq -r '.tag_name' | tr -d v)_Linux-64bit.deb \
- -o /tmp/trivy.deb && apt-get update && apt-get install -y /tmp/trivy.deb && rm /tmp/trivy.deb
-RUN curl -L https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 \
- -o /usr/local/bin/hadolint && chmod +x /usr/local/bin/hadolint
-RUN apt-get update && apt-get install -y shellcheck skopeo && rm -rf /var/lib/apt/lists/*
-RUN curl -L https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 \
- -o /usr/local/bin/cosign && chmod +x /usr/local/bin/cosign
-
 # --- Ansible ---
 RUN apt-get update && apt-get install -y ansible && rm -rf /var/lib/apt/lists/*
 
